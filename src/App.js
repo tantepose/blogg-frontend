@@ -1,25 +1,54 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
+const sanityClient = require('@sanity/client')
+const client = sanityClient({
+  projectId: '6en4zynu',
+  dataset: 'production',
+  useCdn: false
+});
+
 class App extends Component {
+
+  constructor(props) {
+    super(); 
+    
+    this.state = {
+      posts: []
+    }
+  }
+
+  componentWillMount() { 
+
+    const query = '*[ _type == "post"]';
+
+    client
+      .fetch(query)
+      .then(posts => {
+        this.handleResults(posts);
+      })
+      .catch(err => {
+        console.error('Oh no, error occured: ', err)
+      }
+    );
+
+  }
+
+  handleResults = (posts) => {
+    var fetchedPosts = [];
+    posts.map((post) => fetchedPosts.push(post.title));
+
+    this.setState({
+      posts: fetchedPosts
+    });
+  }
+
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        {this.state.posts.map((post) =>
+          <p>{post}</p>
+        )}
       </div>
     );
   }
